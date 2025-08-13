@@ -7,35 +7,58 @@
   </head>
   <body>
     <a-scene 
-      mindar-image="imageTargetSrc: ./dapper.mind;" 
+      mindar-image="imageTargetSrc: ./camera.mind;" 
       color-space="sRGB" 
       renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" 
       device-orientation-permission-ui="enabled: false"
     >
       <a-assets>
-        <!-- Load the new GLTF model -->
         <a-asset-item id="cameraModel" src="./Camera_01_2k.gltf"></a-asset-item>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Increased smoothing and scale -->
       <a-entity 
+        id="markerTarget"
         mindar-image-target="targetIndex: 0" 
         smooth="true" 
-        smoothCount="20" 
-        smoothTolerance="0.0001" 
-        smoothThreshold="10"
+        smoothCount="100" 
+        smoothTolerance="0.000001" 
+        smoothThreshold="100"
       >
         <a-gltf-model 
           src="#cameraModel" 
           rotation="0 0 0" 
           position="0 0 0"  
-          scale="10 10 10"  
+          scale="10 10 10" 
           animation-mixer
         ></a-gltf-model>
       </a-entity>
     </a-scene>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const target = document.querySelector("#markerTarget");
+
+        target.addEventListener("targetFound", () => {
+          console.log("Marker found — starting stabilization...");
+          setTimeout(() => {
+            const pos = target.getAttribute("position");
+            const rot = target.getAttribute("rotation");
+            console.log("Captured position:", pos, "rotation:", rot);
+
+            // Stop tracking
+            target.removeAttribute("mindar-image-target");
+
+            // Apply locked values
+            target.setAttribute("position", pos);
+            target.setAttribute("rotation", rot);
+
+            console.log("Model locked in place.");
+          }, 1500); // Wait 1.5s to settle before locking
+        });
+      });
+    </script>
   </body>
 </html>
